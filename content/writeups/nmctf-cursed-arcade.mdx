@@ -1,0 +1,54 @@
+---
+title: "NMCTF: Cursed Arcade — an OSINT trail across 40 years"
+date: "2026-06-19"
+platform: "NMCTF"
+difficulty: "medium"
+tags: ["osint", "geolocation", "google-maps", "social-media"]
+excerpt: "The OSINT challenge I authored for NMCTF: decode a conspiracy theorist's tweets, a real 1982 arcade death, smiley water towers, and a building scrubbed from Street View."
+---
+
+> **Category:** OSINT | **Flag:** `nmctf{Westwood_College}`
+
+The premise I gave players: *two people died playing the same game, years apart. Conspiracy theorist **IntruderAlert82** believed a cult was behind it — now he's gone too. Find the place they used to operate from.*
+
+## step 1 — find the theorist
+
+The username is the thread to pull: `@IntruderAlert82` surfaces a Twitter/X account ("Truth seeker") with a four-tweet thread. Decode them in order.
+
+## step 2 — the cursed game
+
+> *"They expect us to believe it was natural? A healthy 18-year-old's heart just stops dead..."*
+
+An 18-year-old dying after an arcade session points straight at **Berzerk** — in 1982, Peter Burkowski collapsed after posting a high score. The handle confirms it: *"Intruder alert!"* is the game's famous voice line. The '82 is baked into his username.
+
+## step 3 — geo-lock the town
+
+> *"They built it right next to where the dead sleep. That's not an accident. That's a message."*
+
+Peter died at Friar Tuck's Game Room in **Calumet City, Illinois** — a town with the massive Holy Cross Cemetery sitting right in the middle of it. Geographically locked.
+
+## step 4 — Otto is watching
+
+> *"Every time I drive between the sites... Otto is always there. Watching me."*
+
+Evil Otto is Berzerk's bouncing yellow smiley villain. A smiley face you can *drive past* in Calumet City? The famous **smiley-face water towers** — either search `Calumet City "smiley face"` or ride between the sites in Street View and they stare right at you.
+
+## step 5 — the note in the reviews
+
+> *"I left a note there in case anything happens to me."*
+
+A digital note at a physical landmark lives in one place: **Google Maps reviews**. On the water towers' listing, a review from "Truth seeker":
+
+> *"Whatever they were running out of this spot, they didn't just leave. They vanished. Scrubbed everything. Like it never existed."*
+
+## step 6 — Street View time travel
+
+"Scrubbed... like it never existed" means the present is lying. Drop the pegman at the towers, hit the **clock icon** for historical imagery, and drag back to **2011**: a huge building that no longer exists stands beneath the towers — **Westwood College**, a controversial for-profit institution that shut down after predatory-practice lawsuits. Very cult-like indeed.
+
+Flag: `nmctf{Westwood_College}`
+
+## design notes (from the author)
+
+- Every step is a different OSINT muscle: social recon → historical research → geolocation → review mining → archival imagery.
+- The real 1982 Berzerk death grounds the fiction — players learn an actual piece of weird history on the way.
+- The Street View step is the boss fight: most players stall until they realize Google keeps a time machine in plain sight.

