@@ -59,7 +59,9 @@ export default function AboutPage() {
               {FACTS.map(([k, v]) => (
                 <div key={k} className="flex justify-between gap-4">
                   <dt className="shrink-0 text-fg-dim">{k}:</dt>
-                  <dd className="text-right text-fg">{v}</dd>
+                  <dd className="min-w-0 break-words text-right text-fg">
+                    {v}
+                  </dd>
                 </div>
               ))}
             </dl>

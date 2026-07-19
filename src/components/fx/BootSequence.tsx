@@ -22,8 +22,6 @@ const TASKS = [
   "establishing encrypted tunnel",
 ];
 
-const BAR = 30;
-
 export default function BootSequence() {
   const [mounted, setMounted] = useState(false);
   const [show, setShow] = useState(false);
@@ -87,7 +85,6 @@ export default function BootSequence() {
 
   if (!mounted) return null;
 
-  const filled = Math.round((progress / 100) * BAR);
   const task =
     TASKS[
       Math.min(TASKS.length - 1, Math.floor((progress / 100) * TASKS.length))
@@ -133,12 +130,18 @@ export default function BootSequence() {
               )}
             </div>
 
+            {/* responsive bar — scales to any screen width */}
             <div
-              aria-hidden
-              className="mt-8 text-sm tracking-tight text-terminal sm:mt-10 sm:text-xl"
+              role="progressbar"
+              aria-valuenow={progress}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              className="mx-auto mt-8 h-3 w-full max-w-xl border border-border bg-terminal-dark/30 sm:mt-10"
             >
-              [{"█".repeat(filled)}
-              {"░".repeat(BAR - filled)}]
+              <div
+                className="h-full bg-terminal shadow-[0_0_14px_rgba(0,255,65,0.6)] transition-[width] duration-100"
+                style={{ width: `${progress}%` }}
+              />
             </div>
 
             <p className="mt-6 h-5 text-xs text-fg-dim sm:text-sm">
@@ -151,7 +154,7 @@ export default function BootSequence() {
             </p>
 
             <p className="mt-10 text-[10px] uppercase tracking-[0.3em] text-fg-dim/50">
-              press any key to skip
+              tap or press any key to skip
             </p>
           </div>
         </motion.div>

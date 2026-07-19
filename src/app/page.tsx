@@ -113,7 +113,9 @@ export default function Home() {
                   className="group flex items-center justify-between py-3 text-sm"
                 >
                   <span>
-                    <span className="text-fg-dim">drwxr-xr-x </span>
+                    <span className="hidden text-fg-dim sm:inline">
+                      drwxr-xr-x{" "}
+                    </span>
                     <span className="font-bold text-terminal transition-all group-hover:text-glow">
                       {e.name}
                     </span>
