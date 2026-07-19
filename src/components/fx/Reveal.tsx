@@ -19,7 +19,7 @@ export default function Reveal({
 }: Props) {
   return (
     <motion.div
-      className={className}
+      className={`min-w-0 ${className ?? ""}`}
       initial={{ opacity: 0, y }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once, margin: "-80px" }}
