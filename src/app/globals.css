@@ -56,10 +56,16 @@ html {
   scroll-behavior: smooth;
 }
 
+html,
+body {
+  /* never let stray effects expand the mobile layout viewport */
+  overflow-x: hidden;
+  overflow-x: clip;
+}
+
 body {
   background-color: var(--color-bg);
   color: var(--color-fg);
-  overflow-x: hidden;
 }
 
 /* ---------- selection / scrollbar / focus ---------- */
@@ -148,7 +154,7 @@ body {
   inset: 0;
   opacity: 0;
   pointer-events: none;
-  white-space: nowrap;
+  overflow: hidden;
 }
 .glitch::before {
   color: var(--color-cyan-term);
