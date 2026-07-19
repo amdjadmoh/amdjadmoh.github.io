@@ -9,10 +9,11 @@ Built with **Next.js 16** (App Router) · **Tailwind CSS v4** · **Framer Motion
 ```bash
 npm install
 npm run dev     # http://localhost:3000
-npm run build   # production build
+npm run build   # static export → ./out
 ```
 
-Deploy: push to GitHub → import on **Vercel** → done.
+**Live:** https://amdjadmoh.github.io/ — hosted on **GitHub Pages**, auto-deployed by
+`.github/workflows/deploy.yml` on every push to `main` (Next.js static export).
 
 ## where to edit content
 
